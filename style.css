@@ -1,0 +1,55 @@
+body {
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cell {
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #fff;
+    box-shadow: 0 2px 8px #66a6ff33;
+    transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
+    cursor: pointer;
+    user-select: none;
+}
+#container {
+    width: 360px;
+    height: 360px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 15px;
+    padding: 20px;
+}
+
+#cell1 { background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%); }
+#cell2 { background: linear-gradient(135deg, #f857a6 0%, #ff5858 100%); }
+#cell3 { background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%); }
+#cell4 { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+#cell5 { background: linear-gradient(135deg, #5ee7df 0%, #b490ca 100%); }
+#cell6 { background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%); }
+#cell7 { background: linear-gradient(135deg, #f857a6 0%, #ff5858 100%); }
+#cell8 { background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%); }
+#cell9 { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+
+#cell1:hover { background: linear-gradient(135deg, #ffd200 0%, #f7971e 100%); }
+#cell2:hover { background: linear-gradient(135deg, #ff5858 0%, #f857a6 100%); }
+#cell3:hover { background: linear-gradient(135deg, #185a9d 0%, #43cea2 100%); }
+#cell4:hover { background: linear-gradient(135deg, #330867 0%, #30cfd0 100%); }
+#cell5:hover { background: linear-gradient(135deg, #b490ca 0%, #5ee7df 100%); }
+#cell6:hover { background: linear-gradient(135deg, #ffd200 0%, #f7971e 100%); }
+#cell7:hover { background: linear-gradient(135deg, #ff5858 0%, #f857a6 100%); }
+#cell8:hover { background: linear-gradient(135deg, #185a9d 0%, #43cea2 100%); }
+#cell9:hover { background: linear-gradient(135deg, #330867 0%, #30cfd0 100%); }

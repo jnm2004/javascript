@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cat Quiz</title>
+    <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #fbc2eb 0%, #a18cd1 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .quiz-container {
+            background: #fff;
+            padding: 2rem 2.5rem;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+            text-align: center;
+            min-width: 320px;
+        }
+        .options {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .option-btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            background: #a18cd1;
+            color: #fff;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .option-btn:hover {
+            background: #6a3093;
+            transform: scale(1.04);
+        }
+        .next-btn {
+            margin-top: 2rem;
+            padding: 0.7rem 2rem;
+            border: none;
+            border-radius: 8px;
+            background: #fbc2eb;
+            color: #6a3093;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            display: none;
+        }
+        .next-btn.active {
+            display: inline-block;
+        }
+        .video-popup {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .video-popup.active {
+            display: flex;
+        }
+        .video-box {
+            background: #fff;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px #0002;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .close-btn {
+            margin-top: 0.5rem;
+            background: #fbc2eb;
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem 1.2rem;
+            font-size: 1rem;
+            color: #6a3093;
+            cursor: pointer;
+        }
+        .close-btn:hover {
+            background: #a18cd1;
+            color: #fff;
+        }
+        video {
+            width: 320px;
+            max-width: 90vw;
+            border-radius: 10px;
+        }
+        .result {
+            font-size: 1.3rem;
+            color: #6a3093;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h2 id="questionText"></h2>
+        <div class="options" id="optionsBox"></div>
+        <button class="next-btn" id="nextBtn">Next</button>
+        <div class="result" id="resultBox" style="display:none;"></div>
+    </div>
+
+    <div class="video-popup" id="videoPopup">
+        <div class="video-box">
+            <video id="feedbackVideo" controls autoplay></video>
+            <button class="close-btn" onclick="closeVideo()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Replace with your own videos with sound if you want
+        const happyCatVideo = "https://www.w3schools.com/html/mov_bbb.mp4";
+        const sadCatVideo = "https://www.w3schools.com/html/movie.mp4";
+
+        // Quiz questions array
+        const questions = [
+            {
+                question: 'Which animal says "Meow"?',
+                options: [
+                    { text: "Dog", correct: false },
+                    { text: "Cow", correct: false },
+                    { text: "Cat", correct: true },
+                    { text: "Horse", correct: false }
+                ]
+            },
+            {
+                question: 'Which animal barks?',
+                options: [
+                    { text: "Cat", correct: false },
+                    { text: "Dog", correct: true },
+                    { text: "Cow", correct: false },
+                    { text: "Sheep", correct: false }
+                ]
+            },
+            {
+                question: 'Which animal gives us milk?',
+                options: [
+                    { text: "Dog", correct: false },
+                    { text: "Cat", correct: false },
+                    { text: "Cow", correct: true },
+                    { text: "Lion", correct: false }
+                ]
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+
+        const questionText = document.getElementById('questionText');
+        const optionsBox = document.getElementById('optionsBox');
+        const nextBtn = document.getElementById('nextBtn');
+        const resultBox = document.getElementById('resultBox');
+        const videoPopup = document.getElementById('videoPopup');
+        const feedbackVideo = document.getElementById('feedbackVideo');
+
+        function showQuestion(idx) {
+            answered = false;
+            nextBtn.classList.remove('active');
+            questionText.textContent = questions[idx].question;
+            optionsBox.innerHTML = '';
+            questions[idx].options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt.text;
+                btn.onclick = () => handleAnswer(opt.correct, btn);
+                optionsBox.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(isCorrect, btn) {
+            if (answered) return;
+            answered = true;
+            if (isCorrect) {
+                feedbackVideo.src = happyCatVideo;
+                score++;
+            } else {
+                feedbackVideo.src = sadCatVideo;
+            }
+            videoPopup.classList.add('active');
+            feedbackVideo.play();
+            nextBtn.classList.add('active');
+            // Highlight correct/incorrect
+            Array.from(optionsBox.children).forEach(b => b.disabled = true);
+            btn.style.background = isCorrect ? "#7ed957" : "#ff6f91";
+        }
+
+        function closeVideo() {
+            videoPopup.classList.remove('active');
+            feedbackVideo.pause();
+            feedbackVideo.currentTime = 0;
+        }
+
+        videoPopup.addEventListener('click', function (e) {
+            if (e.target === videoPopup) closeVideo();
+        });
+
+        nextBtn.onclick = function() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion(currentQuestion);
+                nextBtn.classList.remove('active');
+            } else {
+                showResult();
+            }
+        };
+
+        function showResult() {
+            questionText.style.display = "none";
+            optionsBox.style.display = "none";
+            nextBtn.style.display = "none";
+            resultBox.style.display = "block";
+            resultBox.textContent = `Quiz Complete! Your score: ${score} / ${questions.length}`;
+        }
+
+        // Start quiz
+        showQuestion(currentQuestion);
+    </script>
+</body>
+</html>

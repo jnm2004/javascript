@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birth Year Clock Form</title>
+    <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .main-flex {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 2.5rem;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem 2rem 2rem 2rem;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+            text-align: center;
+            width: 340px;
+        }
+
+        .form-container h2 {
+            margin-bottom: 1.2rem;
+            color: #6a3093;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        label {
+            font-weight: 500;
+            color: #6a3093;
+            margin-bottom: 0.3rem;
+            display: block;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid #d1c4e9;
+            border-radius: 6px;
+            font-size: 1rem;
+            margin-top: 0.2rem;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border: 1.5px solid #6a3093;
+        }
+
+        .dob-display,
+        .age-display {
+            margin-top: 1.2rem;
+            font-size: 1.3rem;
+            color: #6a3093;
+            font-weight: 500;
+        }
+
+        button[type="submit"] {
+            margin-top: 1.2rem;
+            width: 100%;
+            padding: 0.8rem 0;
+            background: linear-gradient(90deg, #a18cd1 0%, #fbc2eb 100%);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #a18cd1aa;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        button[type="submit"]:hover {
+            background: linear-gradient(90deg, #6a3093 0%, #a18cd1 100%);
+            transform: translateY(-2px) scale(1.03);
+        }
+
+        .clock-outer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+        }
+
+        .clock-label {
+            margin-bottom: 1rem;
+            color: #6a3093;
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .clock-svg {
+            width: 240px;
+            height: 240px;
+            display: block;
+            background: radial-gradient(circle at 60% 40%, #fbc2eb 0%, #a18cd1 100%);
+            border-radius: 50%;
+            box-shadow: 0 2px 16px 0 rgba(106, 48, 147, 0.10);
+        }
+
+        .clock-center {
+            fill: #fff;
+            stroke: #a18cd1;
+            stroke-width: 2;
+        }
+
+        .clock-knob {
+            fill: #6a3093;
+            stroke: #fff;
+            stroke-width: 3;
+            cursor: pointer;
+        }
+
+        .clock-year {
+            font-size: 2.2rem;
+            font-weight: bold;
+            fill: #6a3093;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            text-shadow: 0 2px 8px #fff8;
+        }
+
+        @media (max-width: 700px) {
+            .main-flex {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-flex">
+        <div class="form-container">
+            <h2>Enter Your Details</h2>
+            <form id="dobForm" autocomplete="off">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" placeholder="Enter your name" required>
+                </div>
+                <div class="dob-display" id="dobDisplay"></div>
+                <div class="age-display" id="ageDisplay"></div>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+        <div class="clock-outer">
+            <div class="clock-label">Rotate the knob to set your Date of Birth year</div>
+            <svg class="clock-svg" id="clockSvg" viewBox="0 0 240 240">
+                <circle cx="120" cy="120" r="100" fill="#fff" stroke="#a18cd1" stroke-width="6" />
+                <!-- Tick marks -->
+                <g id="ticks"></g>
+                <!-- Knob -->
+                <circle id="knob" class="clock-knob" cx="120" cy="40" r="16" />
+                <!-- Center -->
+                <circle class="clock-center" cx="120" cy="120" r="10" />
+                <!-- Year text -->
+                <text id="clockYear" class="clock-year" x="120" y="120"></text>
+            </svg>
+        </div>
+    </div>
+    <script>
+        const clockSvg = document.getElementById('clockSvg');
+        const knob = document.getElementById('knob');
+        const clockYearText = document.getElementById('clockYear');
+        const dobDisplay = document.getElementById('dobDisplay');
+        const ageDisplay = document.getElementById('ageDisplay');
+
+        // Default DOB: 10-07-2025
+        let baseDay = 10;
+        let baseMonth = 6; // July (0-indexed)
+        let baseYear = 2025;
+
+        let currentDay = baseDay;
+        let currentMonth = baseMonth;
+        let currentYear = baseYear;
+        let dragging = false;
+        let prevAngle = -90;
+        let totalAngle = (baseMonth * 30) + (baseDay - 1) * (30 / 30); // start at baseMonth and baseDay
+
+        const months = [
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        ];
+
+        // Draw tick marks for months
+        const ticks = document.getElementById('ticks');
+        for (let i = 0; i < 12; i++) {
+            const angle = (i * 30 - 90) * Math.PI / 180;
+            const x1 = 120 + Math.cos(angle) * 90;
+            const y1 = 120 + Math.sin(angle) * 90;
+            const x2 = 120 + Math.cos(angle) * 100;
+            const y2 = 120 + Math.sin(angle) * 100;
+            const tick = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            tick.setAttribute("x1", x1);
+            tick.setAttribute("y1", y1);
+            tick.setAttribute("x2", x2);
+            tick.setAttribute("y2", y2);
+            tick.setAttribute("stroke", "#a18cd1");
+            tick.setAttribute("stroke-width", "3");
+            ticks.appendChild(tick);
+
+            // Month labels
+            const labelAngle = (i * 30 - 90) * Math.PI / 180;
+            const lx = 120 + Math.cos(labelAngle) * 75;
+            const ly = 120 + Math.sin(labelAngle) * 75 + 6;
+            const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            label.setAttribute("x", lx);
+            label.setAttribute("y", ly);
+            label.setAttribute("text-anchor", "middle");
+            label.setAttribute("font-size", "13");
+            label.setAttribute("fill", "#6a3093");
+            label.textContent = months[i][0];
+            ticks.appendChild(label);
+        }
+
+        // Helper: get angle from center
+        function getAngle(x, y) {
+            const dx = x - 120;
+            const dy = y - 120;
+            let angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            angle = angle < -90 ? angle + 450 : angle + 90; // 0 at top, 360 at top again
+            return angle;
+        }
+
+        // Helper: set knob position
+        function setKnob(angle) {
+            const rad = (angle - 90) * Math.PI / 180;
+            const x = 120 + Math.cos(rad) * 80;
+            const y = 120 + Math.sin(rad) * 80;
+            knob.setAttribute('cx', x);
+            knob.setAttribute('cy', y);
+        }
+
+        // Helper: get days in month
+        function daysInMonth(year, month) {
+            return new Date(year, month + 1, 0).getDate();
+        }
+
+        // Helper: update displays
+        function updateDisplays() {
+            // Calculate DOB from totalAngle
+            let angle = ((totalAngle % 360) + 360) % 360;
+            let yearOffset = Math.floor(totalAngle / 360);
+            currentYear = baseYear + yearOffset;
+
+            let monthFloat = angle / 30;
+            currentMonth = Math.floor(monthFloat);
+            let daysThisMonth = daysInMonth(currentYear, currentMonth);
+            let dayFloat = (monthFloat - currentMonth) * daysThisMonth;
+            currentDay = Math.floor(dayFloat) + 1;
+            // Clamp day
+            if (currentDay > daysThisMonth) currentDay = daysThisMonth;
+
+            clockYearText.textContent = `${months[currentMonth]} ${currentYear}`;
+            dobDisplay.textContent = `Date of Birth: ${currentDay.toString().padStart(2, '0')}-${(currentMonth + 1).toString().padStart(2, '0')}-${currentYear}`;
+            const today = new Date();
+            let age = today.getFullYear() - currentYear;
+            // Adjust if birthday hasn't occurred yet this year
+            const hasBirthdayPassed = (today.getMonth() > currentMonth) ||
+                (today.getMonth() === currentMonth && today.getDate() >= currentDay);
+            if (!hasBirthdayPassed) age--;
+            ageDisplay.textContent = `Your Age: ${age} year${age !== 1 ? 's' : ''}`;
+        }
+
+        // Mouse/touch events for knob
+        function onPointerDown(e) {
+            dragging = true;
+            e.preventDefault();
+            let clientX, clientY;
+            if (e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            const rect = clockSvg.getBoundingClientRect();
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+            prevAngle = getAngle(x, y);
+        }
+        function onPointerMove(e) {
+            if (!dragging) return;
+            let clientX, clientY;
+            if (e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            const rect = clockSvg.getBoundingClientRect();
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+            let angle = getAngle(x, y);
+
+            // Calculate delta
+            let delta = angle - prevAngle;
+            if (delta > 180) delta -= 360;
+            if (delta < -180) delta += 360;
+
+            totalAngle += delta;
+            prevAngle = angle;
+
+            // Snap to nearest day
+            let angleMod = ((totalAngle % 360) + 360) % 360;
+            let yearOffset = Math.floor(totalAngle / 360);
+            let monthFloat = angleMod / 30;
+            let month = Math.floor(monthFloat);
+            let daysThisMonth = daysInMonth(baseYear + yearOffset, month);
+            let dayFloat = (monthFloat - month) * daysThisMonth;
+            let day = Math.round(dayFloat) + 1;
+            if (day > daysThisMonth) day = daysThisMonth;
+            // Recalculate angle to snap
+            let snappedAngle = (month * 30) + ((day - 1) * (30 / daysThisMonth));
+            setKnob(snappedAngle - 90);
+            updateDisplays();
+        }
+        function onPointerUp(e) {
+            dragging = false;
+        }
+
+        // Initialize
+        let initialAngle = (baseMonth * 30) + ((baseDay - 1) * (30 / daysInMonth(baseYear, baseMonth)));
+        setKnob(initialAngle - 90);
+        totalAngle = initialAngle;
+        updateDisplays();
+
+        // Event listeners
+        knob.addEventListener('mousedown', onPointerDown);
+        knob.addEventListener('touchstart', onPointerDown, { passive: false });
+        window.addEventListener('mousemove', onPointerMove);
+        window.addEventListener('touchmove', onPointerMove, { passive: false });
+        window.addEventListener('mouseup', onPointerUp);
+        window.addEventListener('touchend', onPointerUp);
+
+        // --- FORM SUBMIT ---
+        document.getElementById('dobForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            if (!name) {
+                alert("Please enter your name.");
+                document.getElementById('name').focus();
+                return;
+            }
+            alert(
+                `Name: ${name}\n` +
+                `Date of Birth: ${dobDisplay.textContent.replace('Date of Birth: ', '')}\n` +
+                `${ageDisplay.textContent}`
+            );
+        });
+    </script>
+</body>
+
+</html>
